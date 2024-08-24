@@ -17,7 +17,7 @@ public class UserRepository {
     private List<User> users;
 
     RestTemplate restTemplate;
-
+    @Autowired
     public UserRepository(RestTemplate restTemplate)
     {
         this.restTemplate=restTemplate;
@@ -26,26 +26,35 @@ public class UserRepository {
         users.add(new User("2", "Abdullah","9999999",new ArrayList<>(), new ArrayList<>()));
         users.add(new User("3", "Hosna","88888888",new ArrayList<>(), new ArrayList<>()));
         users.add(new User("4", "Farima","77777777777",new ArrayList<>(), new ArrayList<>()));
-        load();
     }
 
 
-    public void load()
-    {
-        for(User user : users)
-        {
-            String notificationUrl = "http://localhost:8082/notification/user/"+user.getUserId();
-            String postUrl = "http://localhost:8081/post/user/"+ user.getUserId();
 
-            Notification[] notifications = restTemplate.getForObject(notificationUrl,Notification[].class);
-            Post[] posts = restTemplate.getForObject(postUrl,Post[].class);
-            user.setNotifications(Arrays.asList(notifications));
-            user.setPosts(Arrays.asList(posts));
+    public List<User> getAllUsers() {
+        for (User user : users) {
+            try {
+                String notificationUrl = "http://notification-service/notification/user/" + user.getUserId();
+                //notificationUrl = notificationUrl.replace("_", "-"); // Replace invalid characters
+
+                String postUrl = "http://post-service/post/user/" + user.getUserId();
+                //postUrl = postUrl.replace("_", "-");
+
+                Notification[] notifications = restTemplate.getForObject(notificationUrl, Notification[].class);
+                Post[] posts = restTemplate.getForObject(postUrl, Post[].class);
+
+                if (notifications != null) {
+                    user.setNotifications(Arrays.asList(notifications));
+                }
+
+                if (posts != null) {
+                    user.setPosts(Arrays.asList(posts));
+                }
+
+            } catch (Exception e) {
+                // Log error or handle it gracefully
+                System.err.println("Error fetching data for user " + user.getUserId() + ": " + e.getMessage());
+            }
         }
-    }
-
-    public List<User> getAllUsers()
-    {
         return this.users;
     }
     public User getUserByUserId(String userId)
