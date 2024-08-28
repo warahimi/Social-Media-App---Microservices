@@ -19,5 +19,7 @@ public class User {
     private String website;
     private Company company;
     private List<Post> posts;
+    private List<Todo> todos;
+    private List<Album> albums;
 
 }
